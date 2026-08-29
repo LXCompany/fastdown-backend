@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, redirect
+from flask import Flask, request, jsonify
 from flask_cors import CORS
 import yt_dlp
 import os
@@ -17,12 +17,13 @@ def download():
 
     ydl_opts = {
         'format': 'bestaudio/best' if is_audio else 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
+        'extractor_args': {'youtube': {'player_client': ['android', 'web']}},
+        'noplaylist': True,
     }
 
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
-            # Obtenemos el enlace de streaming directo del servidor de origen
             direct_url = info.get('url') or (info.get('formats')[0].get('url') if info.get('formats') else None)
             
             if not direct_url:
@@ -35,3 +36,5 @@ def download():
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
+    
+    
