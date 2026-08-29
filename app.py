@@ -17,12 +17,18 @@ def download():
 
     ydl_opts = {
         'format': 'bestaudio/best' if is_audio else 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
-        'extractor_args': {'youtube': {'player_client': ['android', 'web']}},
+        'extractor_args': {
+            'youtube': {
+                'player_client': ['ios', 'web']
+            }
+        },
         'noplaylist': True,
     }
 
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = yt_dlp.YoutubeDL({'extract_flat': True}).extract_info(url, download=False)
+            # Extraemos la información real usando las opciones configuradas
             info = ydl.extract_info(url, download=False)
             direct_url = info.get('url') or (info.get('formats')[0].get('url') if info.get('formats') else None)
             
@@ -36,5 +42,4 @@ def download():
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
-    
     
