@@ -20,15 +20,13 @@ def download():
     else:
         format_selector = 'best[ext=mp4]/best'
 
+    # Configuramos yt-dlp con clientes simulados para saltar el bloqueo de bot de YouTube
     ydl_opts = {
         'format': format_selector,
         'extractor_args': {
             'youtube': {
-                'player_client': ['ios', 'android', 'web']
+                'player_client': ['tv', 'web']
             }
-        },
-        'http_headers': {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
         },
         'noplaylist': True,
     }
@@ -58,4 +56,4 @@ def download():
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
-                    
+    
