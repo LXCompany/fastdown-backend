@@ -15,7 +15,6 @@ def download():
     if not url:
         return jsonify({'error': 'No URL provided'}), 400
 
-    # Definimos la estrategia de formatos para separar video completo vs solo audio
     if is_audio:
         format_selector = 'bestaudio/best'
     else:
@@ -23,6 +22,14 @@ def download():
 
     ydl_opts = {
         'format': format_selector,
+        'extractor_args': {
+            'youtube': {
+                'player_client': ['ios', 'android', 'web']
+            }
+        },
+        'http_headers': {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        },
         'noplaylist': True,
     }
 
@@ -30,10 +37,8 @@ def download():
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
             
-            # Si hay formatos múltiples, buscamos uno que tenga video y audio juntos, o el mejor disponible
             direct_url = info.get('url')
             if not direct_url and 'formats' in info:
-                # Filtrar formatos que tengan video para Facebook
                 formats = info['formats']
                 if not is_audio:
                     mp4_formats = [f for f in formats if f.get('ext') == 'mp4' and f.get('vcodec') != 'none']
@@ -53,4 +58,4 @@ def download():
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
-                
+                    
