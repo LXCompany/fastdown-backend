@@ -15,21 +15,34 @@ def download():
     if not url:
         return jsonify({'error': 'No URL provided'}), 400
 
+    # Definimos la estrategia de formatos para separar video completo vs solo audio
+    if is_audio:
+        format_selector = 'bestaudio/best'
+    else:
+        format_selector = 'best[ext=mp4]/best'
+
     ydl_opts = {
-        'format': 'bestaudio/best' if is_audio else 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
-        'extractor_args': {
-            'youtube': {
-                'player_client': ['tv', 'web']
-            }
-        },
+        'format': format_selector,
         'noplaylist': True,
     }
 
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
-            direct_url = info.get('url') or (info.get('formats')[0].get('url') if info.get('formats') else None)
             
+            # Si hay formatos múltiples, buscamos uno que tenga video y audio juntos, o el mejor disponible
+            direct_url = info.get('url')
+            if not direct_url and 'formats' in info:
+                # Filtrar formatos que tengan video para Facebook
+                formats = info['formats']
+                if not is_audio:
+                    mp4_formats = [f for f in formats if f.get('ext') == 'mp4' and f.get('vcodec') != 'none']
+                    if mp4_formats:
+                        direct_url = mp4_formats[-1].get('url')
+                
+                if not direct_url:
+                    direct_url = formats[0].get('url')
+
             if not direct_url:
                 return jsonify({'error': 'Could not extract media URL'}), 500
                 
@@ -40,4 +53,4 @@ def download():
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
-    
+                
